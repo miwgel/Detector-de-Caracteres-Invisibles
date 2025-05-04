@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SingulariDev - Detector y Limpiador de Caracteres Invisibles LLM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --primary: #2d2d2d;
+      --accent: #6c63ff;
+      --bg: #f7f7fa;
+      --white: #fff;
+      --danger: #ff5c5c;
+      --radius: 14px;
+      --shadow: 0 4px 24px rgba(44,44,84,0.08);
+    }
+    body {
+      background: var(--bg);
+      font-family: 'Inter', Helvetica, Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      color: var(--primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      font-size: 1.15em;
+    }
+    .container {
+      background: var(--white);
+      margin: 2.5em 0 2em 0;
+      padding: 2.8em 2.2em 2.2em 2.2em;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 540px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2em;
+    }
+    h1 {
+      font-size: 2em;
+      font-weight: 800;
+      margin: 0 0 0.25em 0;
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: -1px;
+    }
+    .tool-title {
+      font-size: 1.18em;
+      font-weight: 700;
+      color: #444;
+      margin: 0.1em 0 0.7em 0;
+      text-align: center;
+      letter-spacing: 0.01em;
+      background: #f7f7fa;
+      border-radius: 8px;
+      padding: 0.4em 0;
+      border: 1.5px solid #ececf7;
+      box-shadow: 0 1px 4px rgba(44,44,84,0.03);
+    }
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      font-size: 1.13em;
+      padding: 1.2em;
+      border-radius: var(--radius);
+      border: 2px solid #d0d0e0;
+      resize: vertical;
+      background: #fafaff;
+      color: var(--primary);
+      transition: border 0.2s;
+      box-sizing: border-box;
+      line-height: 1.6;
+    }
+    textarea:focus {
+      outline: none;
+      border: 2px solid var(--accent);
+      background: #f0f0ff;
+    }
+    .btn-row {
+      display: flex;
+      gap: 1.2em;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    button {
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.9em 2em;
+      font-size: 1.08em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(44,44,84,0.08);
+      letter-spacing: 0.5px;
+    }
+    button:hover, .copy-btn:hover {
+      background: #554ee2;
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(44,44,84,0.13);
+    }
+    .result {
+      background: #f3f3fd;
+      border-radius: var(--radius);
+      padding: 1.2em;
+      font-size: 1.08em;
+      color: var(--primary);
+      word-break: break-all;
+      margin-bottom: 0.7em;
+      border: 1.5px solid #e0e0ff;
+    }
+    .char-list {
+      margin: 0.7em 0 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: 1.05em;
+    }
+    .char-list li {
+      margin-bottom: 0.3em;
+      padding: 0.45em 0.7em;
+      border-radius: 8px;
+      background: #ffecec;
+      color: var(--danger);
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      display: flex;
+      align-items: center;
+      gap: 0.7em;
+      font-size: 1em;
+    }
+    .char-list .hex {
+      background: #ffe0e0;
+      color: #b80000;
+      border-radius: 5px;
+      padding: 0.13em 0.5em;
+      font-size: 1em;
+      margin-right: 0.4em;
+    }
+    .copy-btn {
+      background: #e0e0ff;
+      color: var(--accent);
+      border: none;
+      border-radius: 8px;
+      padding: 0.6em 1.3em;
+      font-size: 1.05em;
+      margin-left: 0.7em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      font-weight: 600;
+    }
+    .copy-btn:active {
+      background: #c7c7f7;
+      color: #3a2fa0;
+    }
+    .footer {
+      margin: 2.5em 0 1.2em 0;
+      font-size: 1.05em;
+      color: #888;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .footer a {
+      color: var(--accent);
+      text-decoration: underline;
+      font-weight: 500;
+    }
+    @media (max-width: 700px) {
+      .container {
+        padding: 1.3em 0.6em;
+        max-width: 99vw;
+        gap: 1.2em;
+      }
+      h1 {
+        font-size: 1.3em;
+      }
+      .result, .char-list li {
+        font-size: 1em;
+      }
+      button, .copy-btn {
+        font-size: 1em;
+        padding: 0.8em 1.2em;
+      }
+      textarea {
+        font-size: 1em;
+        padding: 0.8em;
+      }
+    }
+    @media (max-width: 430px) {
+      .container {
+        padding: 0.7em 0.1em;
+        gap: 0.7em;
+      }
+      h1 {
+        font-size: 1em;
+      }
+      .result, .char-list li {
+        font-size: 0.95em;
+      }
+      button, .copy-btn {
+        font-size: 0.95em;
+        padding: 0.7em 0.7em;
+      }
+      textarea {
+        font-size: 0.95em;
+        padding: 0.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="brand-title">SingulariDev</h1>
+    <h2 class="tool-title">Detector y Limpiador de Caracteres Invisibles</h2>
+    <textarea id="input" placeholder="Pega aquí el texto sospechoso..."></textarea>
+    <div class="btn-row">
+      <button id="detectBtn">Detectar</button>
+      <button id="cleanBtn">Limpiar</button>
+    </div>
+    <div class="community-invite">
+      <span>¿Quieres aprender a dominar la inteligencia artificial? Únete a mi comunidad <a href="https://skool.com/sexy" target="_blank" rel="noopener">SingulariDev</a> 🧠</span>
+    </div>
+    <div id="result" class="result" style="display:none"></div>
+    <ul id="charList" class="char-list"></ul>
+    <div id="cleanedSection" style="display:none">
+      <label for="cleanedText" style="font-size:0.97em;color:#666;">Texto limpio:</label>
+      <textarea id="cleanedText" readonly style="margin-top:0.5em"></textarea>
+      <button class="copy-btn" id="copyBtn">Copiar</button>
+    </div>
+  </div>
+  <div class="footer">
+    <div>Privacidad: Todo ocurre en tu navegador. Código fuente en <a href="https://github.com/miwgel/detector-de-caracteres-invisibles" target="_blank">GitHub</a>.</div>
+    <div>
+      Recursos Unicode: 
+      <a href="https://www.branah.com/unicode-converter" target="_blank">Branah</a> · 
+      <a href="http://utf8-chartable.de/unicode-utf8-table.pl" target="_blank">UTF8 Chartable</a>
+    </div>
+  </div>
+  <script>
+    // Lista de caracteres invisibles/non-printable relevantes
+    const invisibleChars = [
+      { name: "Narrow No-Break Space", hex: "202F" },
+      { name: "No-Break Space", hex: "00A0" },
+      { name: "Zero Width Space", hex: "200B" },
+      { name: "Zero Width Non-Joiner", hex: "200C" },
+      { name: "Zero Width Joiner", hex: "200D" },
+      { name: "Zero Width No-Break Space", hex: "FEFF" },
+      { name: "Word Joiner", hex: "2060" },
+      { name: "Left-to-Right Mark", hex: "200E" },
+      { name: "Right-to-Left Mark", hex: "200F" },
+      { name: "Left-to-Right Embedding", hex: "202A" },
+      { name: "Right-to-Left Embedding", hex: "202B" },
+      { name: "Pop Directional Formatting", hex: "202C" },
+      { name: "Left-to-Right Override", hex: "202D" },
+      { name: "Right-to-Left Override", hex: "202E" },
+      { name: "Line Separator", hex: "2028" },
+      { name: "Paragraph Separator", hex: "2029" },
+      { name: "Soft Hyphen", hex: "00AD" },
+      { name: "Mongolian Vowel Separator", hex: "180E" }
+    ];
+    // Construir regex
+    const invisibleRegex = new RegExp("[" + invisibleChars.map(c => "\\u" + c.hex).join("") + "]", "gu");
+
+    function findInvisibleChars(str) {
+      let found = [];
+      for (let i = 0; i < str.length; ++i) {
+        const code = str.codePointAt(i).toString(16).toUpperCase().padStart(4, "0");
+        const match = invisibleChars.find(c => c.hex === code);
+        if (match) {
+          found.push({ char: str[i], code, name: match.name, pos: i });
+        }
+        // Handle surrogate pairs
+        if (str.codePointAt(i) > 0xFFFF) i++;
+      }
+      return found;
+    }
+
+    document.getElementById("detectBtn").onclick = function() {
+      const input = document.getElementById("input").value;
+      const resultDiv = document.getElementById("result");
+      const charList = document.getElementById("charList");
+      const cleanedSection = document.getElementById("cleanedSection");
+      charList.innerHTML = "";
+      cleanedSection.style.display = "none";
+      document.getElementById("cleanedText").value = "";
+
+      if (!input) {
+        resultDiv.style.display = "none";
+        return;
+      }
+
+      const found = findInvisibleChars(input);
+      if (found.length === 0) {
+        resultDiv.innerHTML = "No se encontraron caracteres invisibles sospechosos.";
+        resultDiv.style.display = "block";
+        return;
+      }
+      resultDiv.innerHTML = `Se encontraron <b>${found.length}</b> caracteres invisibles sospechosos:`;
+      resultDiv.style.display = "block";
+      found.forEach(f => {
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="hex">U+${f.code}</span> ${f.name} <span style="color:#aaa;font-size:0.93em">(posición ${f.pos+1})</span>`;
+        charList.appendChild(li);
+      });
+    };
+
+    document.getElementById("cleanBtn").onclick = function() {
+      const input = document.getElementById("input").value;
+      const cleaned = input.replace(invisibleRegex, "");
+      document.getElementById("cleanedText").value = cleaned;
+      document.getElementById("cleanedSection").style.display = "block";
+    };
+
+    document.getElementById("copyBtn").onclick = function() {
+      const cleaned = document.getElementById("cleanedText").value;
+      navigator.clipboard.writeText(cleaned);
+      this.innerText = "¡Copiado!";
+      setTimeout(() => { this.innerText = "Copiar"; }, 1200);
+    };
+  </script>
+</body>
+</html>
